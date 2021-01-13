@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/songsFragment"
+        android:title="@string/songs"
+        android:icon="@drawable/nav_icon_song_selector"
+        android:enabled="true"
+        />
+
+    <item
+        android:id="@+id/artistFragment"
+        android:title="@string/Artists"
+        android:icon="@drawable/nav_icon_authors_selector"
+        android:enabled="true"
+        />
+</menu>

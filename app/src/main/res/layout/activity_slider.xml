@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/slider_panel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="bottom"
+    app:umanoFadeColor="@android:color/transparent"
+    app:umanoPanelHeight="60dp"
+    app:umanoShadowHeight="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toTopOf="@+id/sliderContent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <FrameLayout
+            android:id="@+id/fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sliderContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/song_player_rounded"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/small_songPlayer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:ignore="MissingConstraints">
+
+            <TextView
+                android:id="@+id/songName_small_songPlayer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="20dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:fontFamily="@font/roboto_bold"
+                android:singleLine="true"
+                android:text=""
+                android:textColor="@color/light"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toStartOf="@+id/previousButton_small_songPlayer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/songAuthor_small_songPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginBottom="5dp"
+                android:fontFamily="@font/roboto"
+                android:text=""
+                android:textColor="@color/darkGreen"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/songName_small_songPlayer" />
+
+            <Button
+                android:id="@+id/playButton_small_songPlayer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:theme="@style/round_button"
+                app:cornerRadius="40dp"
+                app:icon="@drawable/play_stop_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/dark"
+                app:iconTintMode="multiply"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/nextButton_small_songPlayer"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/nextButton_small_songPlayer"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="45dp"
+                app:icon="@drawable/ic_baseline_skip_next_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:layout_constraintBottom_toBottomOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/playButton_small_songPlayer" />
+
+            <Button
+                android:id="@+id/previousButton_small_songPlayer"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="45dp"
+                app:icon="@drawable/ic_baseline_skip_previous_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:layout_constraintBottom_toBottomOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintEnd_toStartOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintTop_toTopOf="@+id/playButton_small_songPlayer" />
+
+            <!-- Habilitar na reformylação da Interface
+            <me.tankery.lib.circularseekbar.CircularSeekBar
+                android:id="@+id/circleSeekBar"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cs_circle_color="@android:color/transparent"
+                app:cs_circle_progress_color="@color/lightGreen"
+                app:cs_circle_stroke_width="4dp"
+                app:cs_circle_style="round"
+                app:cs_circle_x_radius="44dp"
+                app:cs_circle_y_radius="44dp"
+                app:cs_disable_pointer="true"
+                app:cs_lock_enabled="true"
+                app:cs_negative_enabled = "true"
+                app:cs_maintain_equal_circle="false"
+                app:cs_max="0"
+                app:cs_move_outside_circle="false"
+                app:cs_pointer_halo_border_width="0dp"
+                app:cs_pointer_halo_width="0dp"
+                app:cs_pointer_stroke_width="0dp"
+                app:cs_progress="0"
+                app:layout_constraintBottom_toBottomOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintEnd_toEndOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintStart_toStartOf="@+id/playButton_small_songPlayer"
+                app:layout_constraintTop_toTopOf="@+id/playButton_small_songPlayer" />
+           -->
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/songPlayerFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
+            android:alpha="0"
+            app:layout_constraintTop_toBottomOf="@+id/small_songPlayer"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:context=".fragments.SongPlayerFragment"
+            tools:layout_editor_absoluteX="-16dp">
+
+            <TextView
+                android:id="@+id/actualTime_songPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/roboto"
+                android:text=""
+                android:textColor="@color/light"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/seekBar_songPlayer" />
+
+            <SeekBar
+                android:id="@+id/seekBar_songPlayer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:progress="50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/songAuthor_songPlayer" />
+
+            <TextView
+                android:id="@+id/totalTime_songPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/roboto"
+                android:text=""
+                android:textColor="@color/light"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/seekBar_songPlayer" />
+
+            <TextView
+                android:id="@+id/songName_songPlayer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:fontFamily="@font/roboto_bold"
+                android:singleLine="true"
+                android:text=""
+                android:textAlignment="center"
+                android:textColor="@color/light"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/songAuthor_songPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/roboto"
+                android:text=""
+                android:textColor="@color/darkGreen"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/songName_songPlayer" />
+
+            <Button
+                android:id="@+id/playButton_songPlayer"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:theme="@style/round_button"
+                app:cornerRadius="75dp"
+                app:icon="@drawable/play_stop"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/dark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/totalTime_songPlayer" />
+
+            <Button
+                android:id="@+id/nextButton_songPlayer"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginStart="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="45dp"
+                app:icon="@drawable/ic_baseline_skip_next"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:layout_constraintBottom_toBottomOf="@+id/playButton_songPlayer"
+                app:layout_constraintStart_toEndOf="@+id/playButton_songPlayer"
+                app:layout_constraintTop_toTopOf="@+id/playButton_songPlayer" />
+
+            <Button
+                android:id="@+id/previousButton_songPlayer"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="20dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="45dp"
+                app:icon="@drawable/ic_baseline_skip_previous"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:layout_constraintBottom_toBottomOf="@+id/playButton_songPlayer"
+                app:layout_constraintEnd_toStartOf="@+id/playButton_songPlayer"
+                app:layout_constraintTop_toTopOf="@+id/playButton_songPlayer" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

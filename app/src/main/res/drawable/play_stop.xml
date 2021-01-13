@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_baseline_play_arrow" android:state_activated="false" />
+    <item android:drawable="@drawable/ic_baseline_pause" android:state_activated="true" />
+</selector>
