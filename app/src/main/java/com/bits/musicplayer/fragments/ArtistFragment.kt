@@ -39,7 +39,7 @@ class ArtistFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_artist, container, false)
 
         lifecycleScope.launch {
-            delay(150L)
+            delay(1L)
             loadArtist()
             closeAllOpenFragments()
         }
@@ -71,7 +71,6 @@ class ArtistFragment : Fragment() {
                     }
                 }
                 val listArtist = Artist(id, name, albumCount, songCount, albumArt)
-                ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context))
                 adapter.add(ArtistList(listArtist))
             }
             val rsMax = rs.count

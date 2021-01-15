@@ -1,9 +1,8 @@
 package com.bits.musicplayer
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.media.MediaPlayer
+import android.media.MediaPlayer.OnPreparedListener
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -16,20 +15,19 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.bits.musicplayer.fragments.ArtistFragment
-import com.bits.musicplayer.fragments.SongList
+import com.bits.musicplayer.fragments.FolderFragment
 import com.bits.musicplayer.fragments.SongsFragment
 import com.bits.musicplayer.models.Song
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_slider.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -42,23 +40,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 111)
-        }else{
-            startApp()
-        }
-
+        startApp()
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if(requestCode == 111 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            startApp()
-        }
-    }
     @RequiresApi(Build.VERSION_CODES.R)
     @SuppressLint("CommitTransaction")
     private fun startApp(){
@@ -67,11 +51,11 @@ class MainActivity : AppCompatActivity() {
 
         mp = MediaPlayer()
 
+        ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(this))
+
         navigation()
 
         slidingPanel()
-
-        listSong()
 
         playButton_small_songPlayer.setOnClickListener {
             playStopButton()
@@ -101,10 +85,10 @@ class MainActivity : AppCompatActivity() {
     private fun navigation(){
         makeCurrentFragment(SongsFragment())
         bottomNavigationView.setOnNavigationItemSelectedListener {
-            Log.d("DATA", "TOUCH")
             when(it.itemId){
                 R.id.songsFragment -> makeCurrentFragment(SongsFragment())
                 R.id.artistFragment -> makeCurrentFragment(ArtistFragment())
+                R.id.folderFragment -> makeCurrentFragment(FolderFragment())
             }
             true
         }
@@ -139,63 +123,43 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.R)
     @SuppressLint("Recycle")
-    private fun listSong(){
-        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val musicFile= ArrayList<Song>()
-        val selection = MediaStore.Audio.Media.IS_MUSIC + "!=0"
-        musicFiles
-        var id = -1
-        val resolver = contentResolver
-        val rs = resolver.query(uri, null, selection, null, null)
-        if(rs != null){
-            while (rs.moveToNext()){
-                id ++
-                val fullName = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME))
-                val title = fullName.replace(".mp3", "")
-                val albumId = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))
-                val albumName = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ALBUM))
-                val artistId = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID))
-                val artistName = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ARTIST))
-                val url = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.DATA))
-                val songDuration = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.DURATION))
-
-                val listSongs = Song(id, title, albumId, albumName,artistId, artistName, url, songDuration)
-
-                musicFile.add(listSongs)
-
-                if(rs.isLast){
-                    if(!musicFile.isNullOrEmpty()){
-                        updateListSong(musicFile, id + 1)
-                    }
-                }
-            }
-        }
+    fun listSong(arrayMusics: ArrayList<Song>, totalMusics: Int){
+       if (musicFiles.isNullOrEmpty()){
+           musicFiles = arrayMusics
+           totalSongs = totalMusics
+           try {
+               mp.setOnPreparedListener(OnPreparedListener { mp -> updateInfo(musicFiles!![0].id) })
+               mp.setDataSource(musicFiles!![0].url)
+               mp.prepare()
+               updateSeekBar(mp.duration)
+           } catch (e: Exception) {
+               e.printStackTrace()
+           }
+       }
     }
 
     fun updateListSong( arrayMusics: ArrayList<Song>, totalMusics: Int){
-        if(!musicFiles.isNullOrEmpty()){
+       if(!musicFiles.isNullOrEmpty()){
             mp.reset()
             musicFiles = arrayMusics
             totalSongs = totalMusics
             val fisrtSong = musicFiles!![0].id
             val url = musicFiles!![0].url
-            mp.setDataSource(url)
-            mp.prepare()
-            updateSeekBar(mp.duration)
-            updateInfo(fisrtSong)
-        }else{
-            musicFiles = arrayMusics
-            totalSongs = totalMusics
-            val fisrtSong = musicFiles!![0].id
-            val url = musicFiles!![0].url
-            mp.setDataSource(url)
-            mp.prepare()
-            updateSeekBar(mp.duration)
-            updateInfo(fisrtSong)
-        }
+
+            try {
+                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setDataSource(url)
+                mp.prepare()
+                updateSeekBar(mp.duration)
+                updateInfo(fisrtSong)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+       }
     }
 
-    fun songPlayMain(bundle: Bundle){
+    @RequiresApi(Build.VERSION_CODES.O)
+   fun songPlayMain(bundle: Bundle){
         val id = (bundle.get("id").toString()).toInt()
         val url = musicFiles?.get(id)?.url
 
@@ -207,7 +171,6 @@ class MainActivity : AppCompatActivity() {
     fun updateInfo(id: Int){
         val title = musicFiles?.get(id)?.title
         val artistName = musicFiles?.get(id)?.artistName
-        val totalTimeSong = musicFiles?.get(id)?.songDuration?.toInt()
         songName_small_songPlayer.isSelected = true
         songName_small_songPlayer.text = title.toString()
         songName_songPlayer.isSelected = true
@@ -216,38 +179,43 @@ class MainActivity : AppCompatActivity() {
         songAuthor_songPlayer.text = artistName.toString()
         actualTime_songPlayer.text = "0:00"
 
-        if (totalTimeSong != null) {
-            val finalText = createTimeLabel(totalTimeSong)
-            totalTime_songPlayer.text = finalText
-        }
-
+        val finalText = createTimeLabel(mp.duration)
+        totalTime_songPlayer.text = finalText
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun playMusic(url: String, id: Int){
-
-        updateInfo(id)
-
         if(mp.isPlaying){
             mp.stop()
             mp.reset()
-            mp.setDataSource(url)
-            mp.prepare()
-            mp.start()
-            isPlay = true
-            playButton_small_songPlayer.isActivated = isPlay
-            playButton_songPlayer.isActivated = isPlay
-            actualSong = id
-            updateSeekBar(mp.duration)
+            try {
+                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setDataSource(url)
+                mp.prepare()
+                isPlay = true
+                playButton_small_songPlayer.isActivated = isPlay
+                playButton_songPlayer.isActivated = isPlay
+                actualSong = id
+                updateSeekBar(mp.duration)
+                updateInfo(id)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }else{
             mp.reset()
-            mp.setDataSource(url)
-            mp.prepare()
-            mp.start()
-            isPlay = true
-            playButton_small_songPlayer.isActivated = isPlay
-            playButton_songPlayer.isActivated = isPlay
-            actualSong = id
-            updateSeekBar(mp.duration)
+            try {
+                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setDataSource(url)
+                mp.prepare()
+                isPlay = true
+                playButton_small_songPlayer.isActivated = isPlay
+                playButton_songPlayer.isActivated = isPlay
+                actualSong = id
+                updateSeekBar(mp.duration)
+                updateInfo(id)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -288,7 +256,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
         )
-
         Thread(Runnable {
             while (true){
                 try{
@@ -305,6 +272,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("HandlerLeak")
     private var handler =  object : Handler(){
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
             val currentPosition = msg.what
@@ -332,6 +300,7 @@ class MainActivity : AppCompatActivity() {
         return timeLabel
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun nextMusic() {
         var idSong = actualSong + 1
 
@@ -347,6 +316,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun previousMusic() {
         var idSong = actualSong - 1
 

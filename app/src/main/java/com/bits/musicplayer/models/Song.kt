@@ -5,6 +5,6 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 class Song(var id: Int, var title: String, var albumId: String, var albumName: String,
-           var artistId: String, var artistName: String, var url: String, val songDuration: String): Parcelable{
-constructor() : this(-1,"", "", "", "","", "", "")
+           var artistId: String, var artistName: String, var url: String): Parcelable{
+constructor() : this(-1,"", "", "", "","", "")
 }

@@ -14,4 +14,10 @@
         android:icon="@drawable/nav_icon_authors_selector"
         android:enabled="true"
         />
+
+    <item
+        android:id="@+id/folderFragment"
+        android:title="@string/folder"
+        android:icon="@drawable/ic_baseline_folder"
+        android:enabled="true"/>
 </menu>

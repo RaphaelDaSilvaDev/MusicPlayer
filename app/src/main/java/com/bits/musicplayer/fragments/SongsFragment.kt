@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -20,10 +19,8 @@ import com.bits.musicplayer.R
 import com.bits.musicplayer.models.Song
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.android.synthetic.main.song_list.view.*
 import kotlinx.coroutines.delay
@@ -43,7 +40,7 @@ class SongsFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_songs, container, false)
 
         lifecycleScope.launch {
-            delay(150L)
+            delay(1L)
             loadSong()
             closeAllOpenFragments()
         }
@@ -57,7 +54,7 @@ class SongsFragment : Fragment() {
         val musicFiles= ArrayList<Song>()
         var adapterMax = 0
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val selection = MediaStore.Audio.Media.IS_MUSIC + "!=0"
+        val selection = MediaStore.Audio.Media.IS_MUSIC
         var id = -1
         val resolver = requireActivity().contentResolver
         val rs = resolver.query(uri, null, selection, null, null)
@@ -71,10 +68,8 @@ class SongsFragment : Fragment() {
                 val artistId = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID))
                 val artistName = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.ARTIST))
                 val url = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.DATA))
-                val songDuration = rs.getString(rs.getColumnIndex(MediaStore.Audio.Media.DURATION))
 
-                val listSongs = Song(id, title, albumId, albumName,artistId, artistName, url, songDuration)
-                ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context))
+                val listSongs = Song(id, title, albumId, albumName, artistId, artistName, url)
                 adapter.add(SongList(listSongs))
                 musicFiles.add(listSongs)
             }
@@ -82,8 +77,8 @@ class SongsFragment : Fragment() {
             adapterMax = adapter.itemCount
             if(adapterMax >= rsMax){
                 adapter.notifyDataSetChanged()
-
                 loadListSongs(adapter)
+                (activity as MainActivity).listSong(musicFiles, adapterMax)
             }
         }
 
