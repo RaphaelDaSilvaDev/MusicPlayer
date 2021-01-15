@@ -13,3 +13,4 @@ Versions | Features
 -------- | ---------
 0.1| -Home page<br/> -List Songs<br/> -Play songs<br/>
 0.2| -Artists page<br/> -Play specific artist
+0.3| -Folder, search folders and song ".mp3" in Music Folder.<br/> -Read Songs in SD Card and Internal Storage.<br/> -Bugs corrections.
