@@ -25,7 +25,7 @@ class StartActivity : AppCompatActivity() {
                     , MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE)
         }else{
             lifecycleScope.launch {
-                delay(300L)
+                delay(1500L)
                 start()
             }
         }
@@ -35,7 +35,7 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE){
             lifecycleScope.launch {
-                delay(300L)
+                delay(1500L)
                 start()
             }
         }
@@ -43,7 +43,7 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
 
     private fun start(){
         val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+        //intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     }
 }
