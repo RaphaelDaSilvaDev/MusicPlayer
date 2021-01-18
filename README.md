@@ -1,7 +1,7 @@
 # :notes: MusicPlayer
 ![base](https://user-images.githubusercontent.com/66075182/104467588-3f92b780-5595-11eb-850d-80a3c1baa41e.png)
 
-## Project made with Kotlin, by Raphael Silva!
+## Made by Raphael Silva!
 
 <br/>
 <a href="https://www.figma.com/file/SO27pGhZDq5SOkNOuBAira/Music-Player?node-id=0%3A1">
