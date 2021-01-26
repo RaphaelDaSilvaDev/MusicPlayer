@@ -6,19 +6,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnPreparedListener
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.v4.media.session.MediaSessionCompat
-import android.util.Log
 import android.view.View
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +26,7 @@ import com.bits.musicplayer.fragments.ArtistFragment
 import com.bits.musicplayer.fragments.FolderFragment
 import com.bits.musicplayer.fragments.SongsFragment
 import com.bits.musicplayer.models.Song
+import com.bits.musicplayer.service.OnClearFromRecentService
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -50,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
     var actionName: String? = null
 
+    var playButtonNotfication = R.drawable.ic_baseline_play_arrow_24
+
     private var mediaSessionCompat: MediaSessionCompat? = null
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -64,6 +63,9 @@ class MainActivity : AppCompatActivity() {
     private fun startApp() {
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
         supportActionBar?.setCustomView(R.layout.top_menu)
+
+        registerReceiver(broadcastReceiver, IntentFilter("ACTION"))
+        startService(Intent(baseContext, OnClearFromRecentService::class.java))
 
         mediaSessionCompat = MediaSessionCompat(baseContext, "My Audio")
 
@@ -99,12 +101,17 @@ class MainActivity : AppCompatActivity() {
             previousMusic()
         }
 
-        notificationController()
     }
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun notification(id: Int){
+    private fun notification(id: Int, playPauseImage: Int){
+
+        if(playPauseImage == 1){
+            playButtonNotfication = R.drawable.ic_baseline_pause_24
+        }else{
+            playButtonNotfication = R.drawable.ic_baseline_play_arrow_24
+        }
 
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
@@ -124,14 +131,16 @@ class MainActivity : AppCompatActivity() {
         val builder = NotificationCompat.Builder(this, 1.toString())
             .setSmallIcon(R.drawable.ic_logo_black)
             .setColor(Color.rgb(32,32,32))
-            .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_song))
             .setContentTitle(musicFiles?.get(id)?.title)
             .setContentText(musicFiles?.get(id)?.artistName)
+            .setNotificationSilent()
             .addAction(R.drawable.ic_baseline_skip_previous_24, "Previus", prevPending)
-            .addAction(R.drawable.play_stop_24, "Pause", pausePending)
+            .addAction(playButtonNotfication, "Pause", pausePending)
             .addAction(R.drawable.ic_baseline_skip_next_24, "Next", nextPending)
-            .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(mediaSessionCompat?.sessionToken))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+                .setShowActionsInCompactView(0,1,2)
+                .setMediaSession(mediaSessionCompat?.sessionToken))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
 
@@ -142,23 +151,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun notificationController(){
-        val action = registerReceiver(broadcastReceiver, IntentFilter("ActionName"))
-        Log.d("DATA", "Action: $action")
-
-        if(actionName != null){
-            when(actionName){
-                "playPause" -> Toast.makeText(this, "Play Pause", Toast.LENGTH_SHORT).show()
-                "next" -> Toast.makeText(this, "Next", Toast.LENGTH_SHORT).show()
-                "previous" -> Toast.makeText(this, "Previous", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-    }
-
     var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun onReceive(context: Context?, intent: Intent?) {
-           Log.d("DATA", "BroadcastReciver")
+            val action = intent?.extras?.getString("actionname")
+            when(action){
+                "actionplay" -> playStopButton()
+                "actionnext" ->  nextMusic()
+                "actionprevious" -> previousMusic()
+            }
         }
     }
 
@@ -188,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                 playButton_small_songPlayer.isClickable = text.alpha != 0f
                 nextButton_small_songPlayer.isClickable = text.alpha != 0f
                 previousButton_small_songPlayer.isClickable = text.alpha != 0f
-
+                songPlayerFragment.isClickable = text.alpha == 0F
             }
 
             override fun onPanelStateChanged(
@@ -208,7 +209,7 @@ class MainActivity : AppCompatActivity() {
            musicFiles = arrayMusics
            totalSongs = totalMusics
            try {
-               mp.setOnPreparedListener(OnPreparedListener { mp -> updateInfo(musicFiles!![0].id) })
+               mp.setOnPreparedListener { updateInfo(musicFiles!![0].id) }
                mp.setDataSource(musicFiles!![0].url)
                mp.prepare()
                updateSeekBar(mp.duration)
@@ -228,7 +229,7 @@ class MainActivity : AppCompatActivity() {
             val url = musicFiles!![0].url
 
             try {
-                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setOnPreparedListener { mp -> mp.start() }
                 mp.setDataSource(url)
                 mp.prepare()
                 updateSeekBar(mp.duration)
@@ -244,7 +245,6 @@ class MainActivity : AppCompatActivity() {
         val id = (bundle.get("id").toString()).toInt()
         val url = musicFiles?.get(id)?.url
 
-        notification(id)
         playMusic(url.toString(), id)
         updateSeekBar(mp.duration)
     }
@@ -261,7 +261,11 @@ class MainActivity : AppCompatActivity() {
         songAuthor_small_songPlayer.text = artistName.toString()
         songAuthor_songPlayer.text = artistName.toString()
         actualTime_songPlayer.text = "0:00"
-        notification(id)
+        if(isPlay){
+            notification(id, 1)
+        }else{
+            notification(id, 0)
+        }
 
         val finalText = createTimeLabel(mp.duration)
         totalTime_songPlayer.text = finalText
@@ -273,7 +277,7 @@ class MainActivity : AppCompatActivity() {
             mp.stop()
             mp.reset()
             try {
-                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setOnPreparedListener { mp -> mp.start() }
                 mp.setDataSource(url)
                 mp.prepare()
                 isPlay = true
@@ -288,7 +292,7 @@ class MainActivity : AppCompatActivity() {
         }else{
             mp.reset()
             try {
-                mp.setOnPreparedListener(OnPreparedListener { mp -> mp.start() })
+                mp.setOnPreparedListener { mp -> mp.start() }
                 mp.setDataSource(url)
                 mp.prepare()
                 isPlay = true
@@ -301,20 +305,6 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun playStopButton() {
-        isPlay = if(isPlay){
-            mp.pause()
-            false
-
-        }else{
-            mp.start()
-            true
-        }
-        playButton_small_songPlayer.isActivated = isPlay
-        playButton_songPlayer.isActivated = isPlay
     }
 
     private fun updateSeekBar(duration: Int){
@@ -383,6 +373,21 @@ class MainActivity : AppCompatActivity() {
         timeLabel += sec
 
         return timeLabel
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun playStopButton() {
+        isPlay = if(isPlay){
+            mp.pause()
+            notification(actualSong, 0)
+            false
+        }else{
+            mp.start()
+            notification(actualSong, 1)
+            true
+        }
+        playButton_small_songPlayer.isActivated = isPlay
+        playButton_songPlayer.isActivated = isPlay
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

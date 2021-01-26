@@ -2,15 +2,15 @@
     <!-- Base application theme. -->
     <style name="Theme.MusicPlayer" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/dark</item>
-        <item name="colorPrimaryVariant">@color/veryDark</item>
+        <item name="colorPrimary">@color/veryDark</item>
+        <item name="colorPrimaryVariant">@color/dark</item>
         <item name="colorOnPrimary">@color/light</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/darkGreen</item>
         <item name="colorSecondaryVariant">@color/lightGreen</item>
         <item name="colorOnSecondary">@color/light</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
 
