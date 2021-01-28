@@ -1,6 +1,9 @@
 package com.bits.musicplayer
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -20,7 +23,6 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import com.bits.musicplayer.fragments.ArtistFragment
 import com.bits.musicplayer.fragments.FolderFragment
@@ -51,14 +53,14 @@ class MainActivity : AppCompatActivity() {
 
     private var mediaSessionCompat: MediaSessionCompat? = null
 
-    @RequiresApi(Build.VERSION_CODES.R)
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         startApp()
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("CommitTransaction")
     private fun startApp() {
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
@@ -100,13 +102,9 @@ class MainActivity : AppCompatActivity() {
         previousButton_songPlayer.setOnClickListener {
             previousMusic()
         }
-
     }
 
-    @SuppressLint("ResourceAsColor")
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun notification(id: Int, playPauseImage: Int){
-
         if(playPauseImage == 1){
             playButtonNotfication = R.drawable.ic_baseline_pause_24
         }else{
@@ -129,26 +127,35 @@ class MainActivity : AppCompatActivity() {
         val nextPending: PendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val builder = NotificationCompat.Builder(this, 1.toString())
-            .setSmallIcon(R.drawable.ic_logo_black)
-            .setColor(Color.rgb(32,32,32))
-            .setContentTitle(musicFiles?.get(id)?.title)
-            .setContentText(musicFiles?.get(id)?.artistName)
-            .setNotificationSilent()
-            .addAction(R.drawable.ic_baseline_skip_previous_24, "Previus", prevPending)
-            .addAction(playButtonNotfication, "Pause", pausePending)
-            .addAction(R.drawable.ic_baseline_skip_next_24, "Next", nextPending)
-            .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
-                .setShowActionsInCompactView(0,1,2)
-                .setMediaSession(mediaSessionCompat?.sessionToken))
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOnlyAlertOnce(true)
-            .setContentIntent(pendingIntent)
+                .setChannelId("CHANNEL_ID")
+                .setSmallIcon(R.drawable.ic_logo_black)
+                .setColor(Color.rgb(32,32,32))
+                .setContentTitle(musicFiles?.get(id)?.title)
+                .setContentText(musicFiles?.get(id)?.artistName)
+                .setNotificationSilent()
+                .addAction(R.drawable.ic_baseline_skip_previous_24, "Previus", prevPending)
+                .addAction(playButtonNotfication, "Pause", pausePending)
+                .addAction(R.drawable.ic_baseline_skip_next_24, "Next", nextPending)
+                .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(0,1,2)
+                        .setMediaSession(mediaSessionCompat?.sessionToken))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setOnlyAlertOnce(true)
+                .setContentIntent(pendingIntent)
 
+        val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        with(NotificationManagerCompat.from(this)) {
-            // notificationId is a unique int for each notification that you must define
-            notify(1, builder.build())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = "Your_channel_id"
+            val channel = NotificationChannel(
+                    channelId,
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_HIGH)
+            mNotificationManager.createNotificationChannel(channel)
+            builder.setChannelId(channelId)
         }
+
+        mNotificationManager.notify(0, builder.build())
     }
 
     var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -157,7 +164,7 @@ class MainActivity : AppCompatActivity() {
             val action = intent?.extras?.getString("actionname")
             when(action){
                 "actionplay" -> playStopButton()
-                "actionnext" ->  nextMusic()
+                "actionnext" -> nextMusic()
                 "actionprevious" -> previousMusic()
             }
         }
@@ -181,7 +188,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun slidingPanel(){
-        slider_panel.addPanelSlideListener(object : SlidingUpPanelLayout.PanelSlideListener{
+        slider_panel.addPanelSlideListener(object : SlidingUpPanelLayout.PanelSlideListener {
             override fun onPanelSlide(panel: View?, slideOffset: Float) {
                 val text: ConstraintLayout = findViewById(R.id.small_songPlayer)
                 text.alpha = 1 - slideOffset
@@ -202,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("Recycle")
     fun listSong(arrayMusics: ArrayList<Song>, totalMusics: Int){
        if (musicFiles.isNullOrEmpty()){
@@ -311,13 +318,13 @@ class MainActivity : AppCompatActivity() {
         //circleSeekBar.max = duration.toFloat()
         seekBar_songPlayer.max = duration
         seekBar_songPlayer.setOnSeekBarChangeListener(
-                object : SeekBar.OnSeekBarChangeListener{
+                object : SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(
                             seekBar: SeekBar?,
                             progress: Int,
                             fromUser: Boolean
                     ) {
-                        if(fromUser){
+                        if (fromUser) {
                             mp.seekTo(progress)
                         }
                     }
@@ -332,13 +339,13 @@ class MainActivity : AppCompatActivity() {
                 }
         )
         Thread(Runnable {
-            while (true){
-                try{
+            while (true) {
+                try {
                     val msg = Message()
                     msg.what = mp.currentPosition
                     handler.sendMessage(msg)
                     Thread.sleep(1000)
-                }catch (e: InterruptedException){
+                } catch (e: InterruptedException) {
 
                 }
             }
